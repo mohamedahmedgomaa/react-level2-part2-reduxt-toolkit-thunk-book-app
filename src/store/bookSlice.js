@@ -14,8 +14,9 @@ export const getBooks = createAsyncThunk('book/getBooks', async (_, thunkAPI) =>
 export const insertBook = createAsyncThunk(
     'book/insertBook',
     async (bookData, thunkAPI) => {
-        const {rejectWithValue} = thunkAPI;
+        const {rejectWithValue,getState} = thunkAPI;
         try {
+            bookData.username = getState().auth.name;
             const res = await fetch('http://localhost:3005/books', {
                 method: 'POST',
                 body: JSON.stringify(bookData),
@@ -25,6 +26,22 @@ export const insertBook = createAsyncThunk(
             });
             const data = await res.json();
             return data;
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    });
+
+export const deleteBook = createAsyncThunk( 'book/deleteBook', async (id, thunkAPI) => {
+        const {rejectWithValue,getState} = thunkAPI;
+        try {
+            const res = await fetch(`http://localhost:3005/books/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-type' : 'application/json; charset=UTF-8'
+                }
+            });
+            // const data = await res.json();
+            return id;
         } catch (error) {
             return rejectWithValue(error.message);
         }
@@ -58,6 +75,19 @@ const bookSlice = createSlice({
             state.books.push(action.payload);
         },
         [insertBook.rejected]: (state, action) => {
+            state.isLoading = false;
+            state.error = action.payload;
+        },
+        // deleteBook
+        [deleteBook.pending]: (state, action) => {
+            state.isLoading = true;
+            state.error = null;
+        },
+        [deleteBook.fulfilled]: (state, action) => {
+            state.isLoading = false;
+            state.books = state.books.filter((el) => el.id !== action.payload)
+        },
+        [deleteBook.rejected]: (state, action) => {
             state.isLoading = false;
             state.error = action.payload;
         },

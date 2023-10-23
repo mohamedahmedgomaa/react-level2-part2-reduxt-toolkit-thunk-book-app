@@ -1,8 +1,9 @@
 import React, {useRef} from 'react';
-import {useDispatch} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import {insertBook} from '../store/bookSlice'
 
 const AddForm = () => {
+    const {isLoggedIn} = useSelector(state => state.auth)
     //refs
     const title = useRef(null);
     const price = useRef(null);
@@ -43,7 +44,7 @@ const AddForm = () => {
                             ref={description}
                         ></textarea>
                     </div>
-                    <button type='submit' className='btn btn-primary'>
+                    <button type='submit' className='btn btn-primary mt-1' disabled={!isLoggedIn}>
                         Submit
                     </button>
                 </form>
